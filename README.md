@@ -1,6 +1,8 @@
-# Nojre
+# Intercom
 
-A WIFI walkie talkie designed for cycling with my friends.
+A Wifi production intercom system for event video production.
+
+Eventually will also provide tally lights for Atem and OBS.
 
 ## Intro
 

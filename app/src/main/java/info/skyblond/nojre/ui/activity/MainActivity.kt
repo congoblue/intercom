@@ -44,7 +44,7 @@ class MainActivity : NojreAbstractActivity(
 ) {
 
     private var nickname by mutableStateOf("")
-    private var password by mutableStateOf("")
+    private var password by mutableStateOf("00000")
 
     // 239.255.0.0/16, can only choose the lower 16 bit -> 0~65535
     private var groupChannel by mutableStateOf(0)
@@ -57,7 +57,9 @@ class MainActivity : NojreAbstractActivity(
 
     // the string buffer for numeric values
     private var channelText by mutableStateOf(groupChannel.toString())
-    var portText by mutableStateOf(groupChannel.toString())
+    var portText by mutableStateOf(groupPort.toString())
+
+    private lateinit var nojreService: NojreForegroundService
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,6 +91,9 @@ class MainActivity : NojreAbstractActivity(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Text(text = "TimCom")
+                        Spacer(modifier = Modifier.fillMaxHeight(0.04f))
+
                         Text(text = "Nickname")
                         TextField(value = nickname, onValueChange = {
                             nickname = it.take(10)
@@ -162,7 +167,8 @@ class MainActivity : NojreAbstractActivity(
                                 Text(text = "Details")
                             }
                             Spacer(modifier = Modifier.fillMaxWidth(0.04f))
-                            Button(onClick = {
+                            Button(/*enabled = nojreService.serviceRunning.get(),*/
+                                onClick = {
                                 stopService(intent(NojreForegroundService::class))
                             }) {
                                 Text(text = "Stop")

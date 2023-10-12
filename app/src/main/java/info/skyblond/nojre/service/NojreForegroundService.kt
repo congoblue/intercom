@@ -136,7 +136,7 @@ class NojreForegroundService : Service() {
         return NotificationCompat.Builder(applicationContext, id)
             .setContentTitle(title)
             .setTicker(title)
-            .setContentText("Nojre is running...")
+            .setContentText("TimCom is running...")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
             .build()
