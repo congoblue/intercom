@@ -110,6 +110,10 @@ class NojreForegroundService : Service() {
 
     internal var ourVolume by mutableStateOf(1.0)
 
+    internal var ourLevel by mutableStateOf(1.0)
+
+    internal var micMuteState by mutableStateOf(false)
+
     internal val peerMap = mutableStateMapOf<String, NojrePeer>()
 
     private fun createForegroundNotificationChannel() {
@@ -161,9 +165,10 @@ class NojreForegroundService : Service() {
             SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
         ) * 2
         // UDP MAX is 65535, we left 5KB for protocol overhead
-        if (minBufferSize > 60000) {
-            showToast("Buffer size too big, clap to 60000")
-            minBufferSize = 60000
+        //also latency gets very long if the buffer is too big
+        if (minBufferSize > 16000) {
+            /*showToast("Buffer size too big, clap to 60000")*/
+            minBufferSize = 16000
         }
     }
 
@@ -220,6 +225,7 @@ class NojreForegroundService : Service() {
                     .build()
             )
             .setBufferSizeInBytes(minBufferSize)
+            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
             .build()
         // use SCO output if available
         // TODO: What if user want a different output?
@@ -391,6 +397,12 @@ class NojreForegroundService : Service() {
                 peerMap.mapNotNull { (_, peer) ->
                     val v = peer.queue.poll()?.let { it / 32767.0f } ?: 0.0f
                     v * peer.volume
+
+                    /*if ((v>0) && (v>peer.audioRxLevel)) //generate audio meter levels
+                        peer.audioRxLevel=v
+                    else {
+                        if (peer.audioRxLevel>0) peer.audioRxLevel-=0.00001
+                    }*/
                 }.sum()
             }
             // make sure we don't amplify the sound
@@ -462,8 +474,16 @@ class NojreForegroundService : Service() {
         for (i in 0 until readCount) {
             val s = audioBuffer[i] / 32767.0
             // s in [-1, 1]
-            val k = (s * ourVolume * 32767).toInt().coerceIn(-32768, 32767)
+            var k=0
+            if (!micMuteState)
+                k = (s * ourVolume * 32767).toInt().coerceIn(-32768, 32767)
             buffer.putShort(1 + 2 * i, k.toShort())
+            if ((s>0) && (s>ourLevel) && (!micMuteState)) //generate audio meter levels
+                ourLevel=s
+            else {
+                if (ourLevel>0) ourLevel-=0.00001
+            }
+
         }
         return generateEncryptedPacket(byteArray)
     }

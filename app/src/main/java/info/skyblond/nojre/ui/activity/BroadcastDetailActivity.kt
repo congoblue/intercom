@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -96,11 +97,25 @@ class BroadcastDetailActivity : NojreAbstractActivity() {
         Text(text = "Multicast port: ${nojreService.groupPort}")
         Spacer(modifier = Modifier.height(20.dp))
         var volumeLock by remember { mutableStateOf(true) }
+
+        Button(
+            onClick = { nojreService.micMuteState = !nojreService.micMuteState },
+            colors = if (nojreService.micMuteState) ButtonDefaults.buttonColors()
+            else ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFB80000),
+                contentColor = Color.White
+            ),
+        ) {
+            Text(text = if (nojreService.micMuteState) " Mic Off " else " Mic On ")
+        }
+        //LinearProgressIndicator(progress=nojreService.ourLevel, modifier=0, color=0, trackColor = 0xFF0000)
+        LinearProgressIndicator(progress = nojreService.ourLevel.toFloat())
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "Our volume: ${(nojreService.ourVolume * 100).toInt()}%")
+        )
+        {
+            Text(text = "Transmit volume: ${(nojreService.ourVolume * 100).toInt()}%")
             Spacer(modifier = Modifier.fillMaxWidth(0.04f))
             Button(
                 onClick = { volumeLock = !volumeLock },
@@ -121,7 +136,7 @@ class BroadcastDetailActivity : NojreAbstractActivity() {
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(text = "Known peers:")
+        Text(text = "Other users:")
         Spacer(modifier = Modifier.height(10.dp))
         for (p in nojreService.peerMap) {
             Text(text = "${p.key}: ${p.value.nickname}")
@@ -130,7 +145,7 @@ class BroadcastDetailActivity : NojreAbstractActivity() {
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "local volume: ${(p.value.volume * 100).toInt()}%")
+                Text(text = "Receive volume: ${(p.value.volume * 100).toInt()}%")
                 Spacer(modifier = Modifier.fillMaxWidth(0.04f))
                 Button(
                     onClick = { localVolumeLock = !localVolumeLock },

@@ -16,6 +16,8 @@ class NojrePeer(
     var lastSeen by mutableStateOf(lastSeen)
         private set
 
+    var audioRxLevel by mutableStateOf(1.0f)
+
     val queue = ConcurrentLinkedQueue<Short>()
 
     private fun handleAdvertisePacket(packet: ByteArray) {

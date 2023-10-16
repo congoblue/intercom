@@ -59,7 +59,7 @@ class MainActivity : NojreAbstractActivity(
     private var channelText by mutableStateOf(groupChannel.toString())
     var portText by mutableStateOf(groupPort.toString())
 
-    private lateinit var nojreService: NojreForegroundService
+    var mainServiceRunning by mutableStateOf(false)
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,7 +132,7 @@ class MainActivity : NojreAbstractActivity(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Button(
-                                enabled = (channelText.toIntOrNull() ?: -1) in 0..65535
+                                enabled = (!mainServiceRunning) && (channelText.toIntOrNull() ?: -1) in 0..65535
                                         && (portText.toIntOrNull() ?: -1) in 1024..65535,
                                 onClick = {
                                     // save options
@@ -157,6 +157,7 @@ class MainActivity : NojreAbstractActivity(
                                     service.putExtra("group_port", groupPort)
                                     stopService(service)
                                     startForegroundService(service)
+                                    mainServiceRunning = true
                                 }) {
                                 Text(text = "Start")
                             }
@@ -167,9 +168,10 @@ class MainActivity : NojreAbstractActivity(
                                 Text(text = "Details")
                             }
                             Spacer(modifier = Modifier.fillMaxWidth(0.04f))
-                            Button(/*enabled = nojreService.serviceRunning.get(),*/
+                            Button(enabled = mainServiceRunning,
                                 onClick = {
                                 stopService(intent(NojreForegroundService::class))
+                                mainServiceRunning = false
                             }) {
                                 Text(text = "Stop")
                             }
